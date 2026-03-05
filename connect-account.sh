@@ -4,7 +4,7 @@
 #  Bulk Connect Account — Rank Math SEO (Free Plan)
 # =============================================================
 
-VERSION="1.1.5"
+VERSION="1.1.7"
 
 MAX_JOBS=10
 WP_TIMEOUT=25
@@ -19,11 +19,11 @@ DEACT_TIMEOUT=8
 CONFIG_FILE="${1:-${RANKMATH_CONF:-/root/.rankmath-connect.conf}}"
 
 # รองรับกรณีส่งเข้ามาเป็น /dev/fd/xx (pipe จาก bash <(...))
+_TMP_CONF=""
 if [[ "$CONFIG_FILE" == /dev/fd/* || "$CONFIG_FILE" == /proc/self/fd/* ]]; then
     _TMP_CONF=$(mktemp /tmp/rankmath-conf-XXXXXX)
     cat "$CONFIG_FILE" > "$_TMP_CONF"
     CONFIG_FILE="$_TMP_CONF"
-    trap 'rm -f "$_TMP_CONF"' EXIT
 fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -53,8 +53,8 @@ LOG_ALREADY="$LOG_DIR/rankmath-connect-already.log"
 LOG_OVERWRITE="$LOG_DIR/rankmath-connect-overwrite.log"
 LOG_NOPLUGIN="$LOG_DIR/rankmath-connect-noplugin.log"
 
-RESULT_DIR="/tmp/rankmath-$$"
-mkdir -p "$RESULT_DIR"
+RESULT_DIR=$(mktemp -d /tmp/rankmath-XXXXXX)
+export RESULT_DIR
 
 # ─── ตรวจ WP-CLI ─────────────────────────────────────────────
 WP_BIN=$(command -v wp 2>/dev/null)
@@ -84,6 +84,7 @@ log_noplugin()  { _write_log "$LOG_NOPLUGIN"  "$1"; }
 cleanup() {
     wait 2>/dev/null
     rm -rf "$RESULT_DIR"
+    [[ -n "$_TMP_CONF" ]] && rm -f "$_TMP_CONF"
     find "$LOG_DIR" -name "rankmath-connect*.lck" -delete 2>/dev/null
 }
 trap cleanup EXIT INT TERM
