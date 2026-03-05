@@ -5,7 +5,7 @@
 #  Copy registration data จากเว็บที่ connect แล้วไปทุกเว็บ
 # =============================================================
 
-VERSION="1.0.6"
+VERSION="1.0.7"
 
 MAX_JOBS=5
 WP_TIMEOUT=30
@@ -15,6 +15,9 @@ RM_USERNAME="ufavisionseoteam"
 RM_EMAIL="ufavisionseoteam@gmail.com"
 RM_API_KEY="03cefb18bb49a91d3c619d2906b43db8"
 RM_PLAN="free"
+# ─── ข้อมูล Account เก่า (สำหรับ deactivate จาก rankmath.com) ──
+RM_OLD_USERNAME="ufasonicseoteam"
+RM_OLD_API_KEY="e3f2de5cccb84e62c9e4df85100e87b8"
 # ─────────────────────────────────────────────────────────────
 
 LOG_FILE="/var/log/rankmath-connect.log"
@@ -125,6 +128,8 @@ process_site() {
     local E="$RM_EMAIL"
     local K="$RM_API_KEY"
     local P="$RM_PLAN"
+    local OLD_U="$RM_OLD_USERNAME"
+    local OLD_K="$RM_OLD_API_KEY"
 
     EVAL_OUT=$(timeout "$WP_TIMEOUT" wp --path="$dir" eval '
         // ── 1. ตรวจ Plugin ───────────────────────────────────
@@ -148,6 +153,22 @@ process_site() {
             }
             // ถ้าเป็น account อื่น → OVERWRITE ล้างแล้ว inject ใหม่
             printf("STATUS:OVERWRITE\tOLD_USER:%s\t", $current_user);
+
+            // ยิง deactivateSite ไปบอก rankmath.com ให้ถอด site จาก account เก่า
+            $old_api_key = ($current_user === "'"$OLD_U"'") ? "'"$OLD_K"'" : $existing["api_key"];
+            wp_remote_post(
+                "https://rankmath.com/wp-json/rankmath/v1/deactivateSite",
+                [
+                    "body"    => wp_json_encode([
+                        "username" => $current_user,
+                        "api_key"  => $old_api_key,
+                        "site_url" => esc_url(home_url()),
+                    ]),
+                    "headers" => ["Content-Type" => "application/json"],
+                    "timeout" => 15,
+                ]
+            );
+
             RankMath\Admin\Admin_Helper::get_registration_data(false);
         }
 
@@ -253,7 +274,7 @@ process_site() {
 
 export -f process_site
 export LOG_FILE LOCK_FILE LOG_PASS LOG_FAIL LOG_ALREADY LOG_OVERWRITE LOG_NOPLUGIN LOG_SKIP
-export RESULT_DIR WP_TIMEOUT RM_USERNAME RM_EMAIL RM_API_KEY RM_PLAN
+export RESULT_DIR WP_TIMEOUT RM_USERNAME RM_EMAIL RM_API_KEY RM_PLAN RM_OLD_USERNAME RM_OLD_API_KEY
 
 # ─── รัน parallel ────────────────────────────────────────────
 declare -a PIDS=()
