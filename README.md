@@ -35,19 +35,19 @@
 ไม่ต้อง download ไม่ต้อง chmod — ดึงจาก GitHub แล้วรันได้เลย:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/ufavision/rankmath/refs/heads/main/connect-account.sh)
+bash <(curl -s https://raw.githubusercontent.com/AnonymousVS/rankmath/refs/heads/main/connect-account.sh)
 ```
 
 หรือแบบ `wget`:
 
 ```bash
-bash <(wget -qO- https://raw.githubusercontent.com/ufavision/rankmath/refs/heads/main/connect-account.sh)
+bash <(wget -qO- https://raw.githubusercontent.com/AnonymousVS/rankmath/refs/heads/main/connect-account.sh)
 ```
 
 ถ้ามี **License Key** ให้ส่งไปในคำสั่งเดียวได้เลย:
 
 ```bash
-curl -s https://raw.githubusercontent.com/ufavision/rankmath/refs/heads/main/connect-account.sh \
+curl -s https://raw.githubusercontent.com/AnonymousVS/rankmath/refs/heads/main/connect-account.sh \
   | sed 's/RM_LICENSE_KEY=""/RM_LICENSE_KEY="YOUR-KEY-HERE"/' \
   | bash
 ```
@@ -57,7 +57,7 @@ curl -s https://raw.githubusercontent.com/ufavision/rankmath/refs/heads/main/con
 ### 📥 หรือ Download แล้วรันเอง
 
 ```bash
-wget https://raw.githubusercontent.com/ufavision/rankmath/refs/heads/main/connect-account.sh
+wget https://raw.githubusercontent.com/AnonymousVS/rankmath/refs/heads/main/connect-account.sh
 chmod +x connect-account.sh
 ```
 
